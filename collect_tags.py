@@ -3,6 +3,7 @@ from optparse import OptionParser
 from collections import defaultdict
 from time import time
 import contextlib
+import sqlite3
 
 def get_options():
     parser = OptionParser()
@@ -32,9 +33,9 @@ def get_options():
         exit(1)
     return options
 
-def collect_labels(options):
+def collect_labels(labels_file):
     labels = defaultdict(set)
-    with open(options.labels, 'r') as f:
+    with open(labels_file, 'r') as f:
         next(f) # skip first line (expect column headings)
         for line in f:
             image_id, _, label, confidence = line.rstrip().split(',')
@@ -66,32 +67,41 @@ def load_urls(path):
     yield urls
     urls.clear()
 
-def translate_ids(labels, options):
+def translate_ids(labels, dict_file, meta_file):
     decoded = {}
-    with load_tags(options.dict) as tags, load_urls(options.meta) as urls:
+    with load_tags(dict_file) as tags, load_urls(meta_file) as urls:
         for tag, images in labels.iteritems():
             desc = tags[tag]
             image_urls = set(urls[image_id] for image_id in images)
             decoded[desc] = image_urls
     return decoded
 
-def write_to_file(tag_images, options):
-    with open(options.outfile, 'w') as f:
-        for tag, images in tag_images.iteritems():
-            id_list = ",".join(images)
-            out = "{}:{}".format(tag, id_list)
-            # print(out)
-            print(out, file=f)
+def write_to_file(tag_images, db_name):
+    conn = sqlite3.connect(db_name)
+    conn.text_factory = lambda x: unicode(x, "utf-8", "ignore")
+    c = conn.cursor()
+    c.execute(
+        "DROP TABLE IF EXISTS tags"
+    )
+    c.execute(
+        "CREATE TABLE tags (tag text PRIMARY KEY, urls text)"
+    )
+    for tag, images in tag_images.iteritems():
+        c.execute(
+            "INSERT INTO tags VALUES (?, ?)", (tag, ",".join(images))
+        )
+    conn.commit()
+    conn.close()
 
 def main():
     start_time = time()
     options = get_options()
     print("Collecting tags...")
-    tag_images = collect_labels(options)
+    tag_images = collect_labels(options.labels)
     print("Translating ids...")
-    tag_images = translate_ids(tag_images, options)
+    tag_images = translate_ids(tag_images, options.dict, options.meta)
     print("Writing to file...")
-    write_to_file(tag_images, options)
+    write_to_file(tag_images, options.outfile)
     print("Complete! Total execution time: {} seconds".format(time() - start_time))
 
 if __name__=='__main__':
