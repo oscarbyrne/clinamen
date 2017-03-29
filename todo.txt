@@ -1,7 +1,0 @@
-- convert tags to words
-- convert ids to urls
-- put this into a database for quick lookups
-- implement clinamen algorithm in javascript
-- create aspell dictionary from tag list
-- put it together in web page
-- host it!
