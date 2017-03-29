@@ -4,5 +4,6 @@ Inspired by the 'Pataphysical concept of [clinamen](https://en.wikipedia.org/wik
 
 ## to do:
 - Create aspell dictionary from tag list
+- Shell script for fetching data
 - Implement clinamen algorithm in JS
 - Publish as web app
