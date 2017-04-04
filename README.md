@@ -3,7 +3,9 @@
 Inspired by the 'Pataphysical concept of [clinamen](https://en.wikipedia.org/wiki/%27Pataphysics#Concepts) as applied to words, made possible with Google's [Open Images](https://github.com/openimages/dataset) dataset.
 
 ## to do:
+- Swap to kyoto cabinet for database
 - Create aspell dictionary from tag list
-- Shell script for fetching data
-- Implement clinamen algorithm in JS
-- Publish as web app
+- Back end
+- Front end
+- Package
+- Deploy!
